@@ -18,27 +18,29 @@
  * Input: population = [5,4,5,1], unit = "0111" → 14
  * 
  */
+import java.util.Arrays;
 
 public class smartCitySecurity {
-    public static int maxPopulation(int[] population, int[] security, int start, int n) {
+    public static int maxPopulation(int[] population, int[] security, int start, int n, int[][] dp, int flag) {
         if(start >= n) return 0;
-        
+        if(dp[start][flag] != -1) return dp[start][flag];
         int moveUnit = 0;
-        if(start+1 < n && security[start] == 0 && security[start+1] == 1){
-            security[start+1] = 0;
-            moveUnit = population[start] + maxPopulation(population, security, start+1, n);
-            security[start+1] = 1;
+        if(start+1 < n && (security[start] == 0 || flag == 1) && security[start+1] == 1){
+            moveUnit = population[start] + maxPopulation(population, security, start+1, n, dp, 1);
         }
-        int stayUnit = security[start]*population[start] + maxPopulation(population, security, start+1, n);
-        return Math.max(moveUnit,stayUnit);
+        int stayUnit = maxPopulation(population, security, start+1, n, dp, 0);
+        if(flag == 0) stayUnit += security[start]*population[start];
+        return dp[start][flag] = Math.max(moveUnit,stayUnit);
     }
     public static int maxProtectedPopulation(int[] population, String unit) {
         int n = population.length;
         int security[] = new int[n];
+        int dp[][] = new int[n][2];
+        for(int i=0;i<n;i++) Arrays.fill(dp[i],-1);
         for(int i=0;i<n;i++){
             security[i] = unit.charAt(i) == '1' ? 1 : 0;
         }
-        return maxPopulation(population, security,0 ,n);
+        return maxPopulation(population, security,0 ,n, dp,0);
     }
 
     public static void main(String[] args) {
